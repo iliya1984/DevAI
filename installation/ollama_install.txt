@@ -1,0 +1,7 @@
+#Running model command
+ollama run llama3.1:8b
+
+ollama rm  llama3.1:8b
+
+#Model file location
+C:\Users\{user}\.ollama
