@@ -22,6 +22,7 @@ class LLMTests(unittest.TestCase):
 
             for chunk in stream:
                 print(chunk['message']['content'], end='', flush=True)
+
             is_success = True
         except ResponseError as e:
             print(f'Error code {e.status_code}: {e.error}')
