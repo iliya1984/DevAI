@@ -7,6 +7,7 @@ from configuration import *
 class LLMTests(unittest.TestCase):
 
     def test_ollama(self):
+
         is_success = False
         try:
             client = Client(
