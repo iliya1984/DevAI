@@ -35,25 +35,25 @@ vector_store = Chroma(
     persist_directory="./chroma_langchain_db",  # Where to save data locally, remove if not necessary
 )
 
-class IVectorStore(ABC):
+class IVectorStoreRetriever(ABC):
     @abstractmethod
     def query(self, query: str, k: int = 5) -> list[dict]:
         pass
 
 
-class ChromaDbVectorStore(IVectorStore):
+class ChromaDbVectorStoreRetriever(IVectorStoreRetriever):
     def __init__(self, model):
         self.model = model
 
     @classmethod
-    def from_docs(cls, docs, oai_client):
+    def from_docs(cls, docs):
 
         id = 0
         documents = []
         for d in docs:
             id += 1
             document = Document(
-                page_content="page_content",
+                page_content=d["page_content"],
                 id=id
             )
             documents.append(document)
@@ -66,7 +66,7 @@ class ChromaDbVectorStore(IVectorStore):
     def query(self, query: str, k: int = 5) -> list[dict]:
         pass
 
-class VectorStoreRetriever(IVectorStore):
+class VectorStoreRetriever(IVectorStoreRetriever):
     def __init__(self, docs: list, vectors: list, oai_client):
         self._arr = np.array(vectors)
         self._docs = docs
