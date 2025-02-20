@@ -6,3 +6,5 @@ langchain-core
 sentence-transformers
 langchain-chroma>=0.1.2
 langchain_huggingface
+pdfkit
+bs4
