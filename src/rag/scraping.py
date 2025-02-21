@@ -23,7 +23,7 @@ def extract_path_components(url):
 def build_tree_from_url_list(urls: list, site_name: str):
     tree = Tree()
     root_id = str(uuid.uuid4())
-    root_node = DocumentNode(id=root_id, name='root', site_name=site_name)
+    root_node = DocumentNode(id=root_id, name='root', site_name=site_name, is_root=True)
     tree.create_node(tag="root", identifier=root_id, data=root_node)
 
     # Dictionary to keep track of added nodes

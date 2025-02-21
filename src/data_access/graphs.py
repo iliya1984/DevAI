@@ -44,6 +44,7 @@ class DocumentNode(BaseModel):
     url: Optional[str] = None
     storage_path: Optional[str] = None
     site_name: Optional[str] = None
+    is_root: bool = False
 
 
 class DocumentRelationship(BaseModel):
@@ -75,14 +76,20 @@ class DocumentGraph:
 
     def create_node(self, node: DocumentNode):
         def create_node_tx(tx, args: DocumentNode):
-            query = """
-            CREATE (d:Document {
+            tags = None
+            if args.is_root:
+                tags = ['DocumentGroup']
+
+            dynamic_labels = ":".join(tags) if tags else ""
+
+            query = f"""
+            CREATE (d:Document{':' + dynamic_labels if dynamic_labels else ''} {{
                 id: $id,
                 name: $name,
                 site_name: $site_name,
                 url: $url,
                 storage_path: $storage_path
-            })
+            }})
             RETURN d
             """
 
