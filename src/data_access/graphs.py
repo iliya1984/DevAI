@@ -75,11 +75,19 @@ class DocumentGraph:
 
     def create_node(self, node: DocumentNode):
         def create_node_tx(tx, args: DocumentNode):
-            query = (
-                "CREATE (d:Document {id: $id, name: $name, site_name: $site_name, url: $url, storage_path: $storage_path})"
-                "RETURN d"
-            )
-            result = tx.run(query, id=args.id, name=args.name, site_name=args.site_name, url=args.url, storage_path=args.storage_path)
+            query = """
+            CREATE (d:Document {
+                id: $id,
+                name: $name,
+                site_name: $site_name,
+                url: $url,
+                storage_path: $storage_path
+            })
+            RETURN d
+            """
+
+            params = args.model_dump()
+            result = tx.run(query, **params)
             return result.single()
 
         node_result = self.graph.write(transaction_fn=create_node_tx, args=node)
