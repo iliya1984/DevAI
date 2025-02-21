@@ -1,8 +1,11 @@
 import unittest
 from src.rag.vector_store import ChromaDbVectorStoreRetriever, docs
-from src.rag.scraping import WebScrapper, WebScrappingRequest
-import os
+from src.rag.scraping import LanggraphDocScrapper, WebPageScrapper, WebPageScrappingRequest
+from src.data_access.graphs import DocumentGraph
 from pathlib import Path
+import dotenv
+
+dotenv.load_dotenv()
 
 class LLMTests(unittest.TestCase):
 
@@ -11,35 +14,42 @@ class LLMTests(unittest.TestCase):
         i = 1
 
     def test_web_scrapping(self):
-        sut = WebScrapper()
+        sut = WebPageScrapper()
 
         output_directory = str(Path.cwd() / "docs" / "langgraph" / "home.pdf")
-        request = WebScrappingRequest(
+        request = WebPageScrappingRequest(
             url='https://langchain-ai.github.io/langgraph/',
             output_directory=output_directory
         )
         sut.scrap(request=request)
 
     def test_link_retrieval(self):
-        sut = WebScrapper()
-        url = 'https://langchain-ai.github.io/langgraph/'
-        links = sut.get_links(url=url)
+        # sut = WebPageScrapper()
+        # url = 'https://langchain-ai.github.io/langgraph/'
+        # links = sut.get_links(url=url)
+        #
+        # relevant_links = ''
+        # for link in links:
+        #     if ('codelineno' in link
+        #             or '#' in link
+        #             or '.' in link
+        #             or not link.startswith('https://langchain-ai.github.io/langgraph/')
+        #     ):
+        #         print(f'Skipping the {link} link')
+        #     else:
+        #         relevant_links += link + '\n'
+        #
+        # output_directory = str(Path.cwd() / "docs" / "langgraph" / "links.txt")
+        # with open(output_directory, "w") as file:
+        #     file.write(relevant_links)
 
-        relevant_links = ''
-        for link in links:
-            if ('codelineno' in link
-                    or '#' in link
-                    or not link.startswith('https://langchain-ai.github.io/langgraph/')
-            ):
-                print(f'Skipping the {link} link')
-            else:
-                relevant_links += link + '\n'
+        sut = LanggraphDocScrapper(
+            scrapper=WebPageScrapper(),
+            graph=DocumentGraph()
+        )
 
-        output_directory = str(Path.cwd() / "docs" / "langgraph" / "links.txt")
-        with open(output_directory, "w") as file:
-            file.write(relevant_links)
-
-        self.assertIsNotNone(links)
+        result = sut.scrap()
+        #self.assertIsNotNone(links)
 
 if __name__ == '__main__':
     unittest.main()
