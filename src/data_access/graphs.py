@@ -39,21 +39,47 @@ class Graph:
 
 
 class DocumentNode(BaseModel):
+    id: str
+    name: Optional[str] = None
     url: Optional[str] = None
     storage_path: Optional[str] = None
+    site_name: Optional[str] = None
+
+
+class DocumentRelationship(BaseModel):
+    id: str
+    start_document_id: str
+    end_document_id: str
 
 
 class DocumentGraph:
     def __init__(self):
         self.graph = Graph()
 
+    def create_relationship(self, relationship: DocumentRelationship):
+        def create_relationship_tx(tx, args: DocumentRelationship):
+            query = """
+                            MATCH (p:Document {id: $start_document_id})
+                            MATCH (c:Document {id: $end_document_id})
+                            MERGE (p)-[:HAS_LINK_TO]->(c)
+                            """
+            result = tx.run(
+                query,
+                start_document_id=args.start_document_id,
+                end_document_id=args.end_document_id
+            )
+            return result.single()
+
+        relationship_result = self.graph.write(transaction_fn=create_relationship_tx, args=relationship)
+        return relationship_result
+
     def create_node(self, node: DocumentNode):
         def create_node_tx(tx, args: DocumentNode):
             query = (
-                "CREATE (d:Document {url: $url, storage_path: $storage_path})"
+                "CREATE (d:Document {id: $id, name: $name, site_name: $site_name, url: $url, storage_path: $storage_path})"
                 "RETURN d"
             )
-            result = tx.run(query, url=args.url, storage_path=args.storage_path)
+            result = tx.run(query, id=args.id, name=args.name, site_name=args.site_name, url=args.url, storage_path=args.storage_path)
             return result.single()
 
         node_result = self.graph.write(transaction_fn=create_node_tx, args=node)

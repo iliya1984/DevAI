@@ -10,3 +10,4 @@ pdfkit
 bs4
 neo4j
 python-dotenv
+treelib
