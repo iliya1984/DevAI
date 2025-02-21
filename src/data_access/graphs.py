@@ -2,7 +2,9 @@ import os
 from neo4j import GraphDatabase
 from pydantic import BaseModel
 from typing import Optional
-
+from treelib import Node, Tree
+from urllib.parse import urlparse
+import uuid
 
 class Neo4jConfiguration(BaseModel):
     url: str
@@ -45,6 +47,7 @@ class DocumentNode(BaseModel):
     storage_path: Optional[str] = None
     site_name: Optional[str] = None
     is_root: bool = False
+    is_leaf: bool = False
 
 
 class DocumentRelationship(BaseModel):
@@ -52,6 +55,53 @@ class DocumentRelationship(BaseModel):
     start_document_id: str
     end_document_id: str
 
+
+class DocumentTree:
+    def __init__(self, tree):
+        self.tree = tree
+
+    @staticmethod
+    # Function to extract path components
+    def __extract_path_components(url):
+        parsed_url = urlparse(url)
+        # Split the path and filter out empty components
+        return [comp for comp in parsed_url.path.split('/') if comp]
+
+    @staticmethod
+    def __mark_leaf_nodes(tree: Tree):
+        for node in tree.all_nodes():
+            is_leaf = not tree.children(node.identifier)
+
+            tree_node = tree.get_node(node.identifier)
+            if tree_node.data:
+                tree_node.data.is_leaf = is_leaf
+
+    @staticmethod
+    def from_url_list(urls: list, site_name: str):
+        tree = Tree()
+        root_id = str(uuid.uuid4())
+        root_node = DocumentNode(id=root_id, name='root', site_name=site_name, is_root=True)
+        tree.create_node(tag="root", identifier=root_id, data=root_node)
+
+        # Dictionary to keep track of added nodes
+        added_nodes = {"root": root_id}
+
+        # Build the tree structure
+        for url in urls:
+            components = DocumentTree.__extract_path_components(url)
+            parent_id = root_id
+            path = "root"
+            for comp in components:
+                path = f"{path}/{comp}"
+                if path not in added_nodes:
+                    node_id = str(uuid.uuid4())
+                    node_data = DocumentNode(id=node_id, name=comp, url=url, site_name=site_name)
+                    tree.create_node(tag=comp, identifier=node_id, parent=parent_id, data=node_data)
+                    added_nodes[path] = node_id
+                parent_id = added_nodes[path]
+
+        DocumentTree.__mark_leaf_nodes(tree)
+        return DocumentTree(tree=tree)
 
 class DocumentGraph:
     def __init__(self):
@@ -76,9 +126,11 @@ class DocumentGraph:
 
     def create_node(self, node: DocumentNode):
         def create_node_tx(tx, args: DocumentNode):
-            tags = None
+            tags = []
             if args.is_root:
-                tags = ['DocumentGroup']
+                tags.append('DocumentGroup')
+            if args.is_leaf:
+                tags.append('DocumentLeaf')
 
             dynamic_labels = ":".join(tags) if tags else ""
 
