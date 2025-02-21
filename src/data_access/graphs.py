@@ -1,7 +1,7 @@
 import os
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, Result
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from treelib import Node, Tree
 from urllib.parse import urlparse
 import uuid
@@ -33,6 +33,11 @@ class Graph:
         password = configuration.password
 
         self.driver = GraphDatabase.driver(uri, auth=(username, password))
+
+    def select(self, query: str, args: dict):
+        with self.driver.session() as session:
+            result = session.run(query, args)
+            return [dict(record) for record in result]
 
     def write(self, transaction_fn, args):
         with (self.driver.session() as session):
@@ -106,6 +111,18 @@ class DocumentTree:
 class DocumentGraph:
     def __init__(self):
         self.graph = Graph()
+
+    def get_leaves_by_site_name(self, site_name: str) -> List[DocumentNode]:
+        query = """
+            MATCH (n:Document:DocumentLeaf {site_name: $site_name}) 
+            RETURN n.id AS id, n.name AS name, n.url AS url, 
+                   n.storage_path AS storage_path, n.site_name AS site_name, 
+                   true AS is_leaf
+            """
+
+        result = self.graph.select(query=query, args={'site_name' : site_name})
+        leaves = [DocumentNode(**record) for record in result]
+        return leaves
 
     def create_relationship(self, relationship: DocumentRelationship):
         def create_relationship_tx(tx, args: DocumentRelationship):

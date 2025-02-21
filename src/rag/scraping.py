@@ -1,22 +1,35 @@
 import uuid
 
 import pdfkit
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, field_validator
+from typing import Optional, List, Any
 from abc import ABC, abstractmethod
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 from src.data_access.graphs import DocumentGraph, DocumentTree, DocumentRelationship
-from langchain_core.documents import Document
-from treelib import Node, Tree
-# List of URLs
 
-
+class IUrlFilter(ABC):
+    @abstractmethod
+    def apply(self, url: str) -> bool:
+        pass
 
 class WebPageScrappingRequest(BaseModel):
     url: str = []
     output_file_path: Optional[str] = None
+
+class WebSiteScrappingRequest(BaseModel):
+    site_name: str
+    site_url : str
+    url_filter: Optional[Any]
+    persist_urls: bool = False
+
+    @field_validator("url_filter")
+    @classmethod
+    def check_url_filter(cls, value):
+        if value is not None and not isinstance(value, IUrlFilter):
+            raise ValueError("url_filter must be an instance of IUrlFilter")
+        return value
 
 class IWebPageScrapper(ABC):
     @abstractmethod
@@ -50,14 +63,14 @@ class WebPageScrapper(IWebPageScrapper):
 
 class IWebSiteScrapper(ABC):
     @abstractmethod
-    def scrap(self):
+    def scrap(self, request: WebSiteScrappingRequest):
         pass
 
     @abstractmethod
     def get_links(self, url: str, persist: bool = False) -> List[str]:
         pass
 
-class LanggraphDocScrapper(IWebSiteScrapper):
+class WebsiteScrapper(IWebSiteScrapper):
     def __init__(self, scrapper: IWebPageScrapper, graph: DocumentGraph):
         self.scrapper = scrapper
         self.graph = graph
@@ -80,32 +93,39 @@ class LanggraphDocScrapper(IWebSiteScrapper):
             )
             self.graph.create_relationship(relationship=relationship)
 
-    def scrap(self):
-        site_url = 'https://langchain-ai.github.io/langgraph/'
-        site_name = 'langgraph'
-        links = self.get_links(url=site_url)
+    def scrap(self, request: WebSiteScrappingRequest):
+        site_url = request.site_url
+        site_name = request.site_name
+        persist_urls = request.persist_urls
+        url_filter = request.url_filter
+
+        links = self.get_links(url=site_url, url_filter=url_filter, persist=persist_urls)
         tree = DocumentTree.from_url_list(urls=links, site_name=site_name)
         self.create_nodes_and_relationships(document_tree=tree)
-        i = 1
 
+        leaves = self.graph.get_leaves_by_site_name(site_name=site_name)
 
-
-    def get_links(self, url: str, persist:bool=False) -> List[str]:
+    def get_links(self, url: str, url_filter: IUrlFilter = None, persist:bool=False) -> List[str]:
         links = self.scrapper.get_links(url=url)
-
         relevant_links = []
-        relevant_links_str = ''
+        if url_filter:
+            for link in links:
+                # if ('codelineno' in link
+                #         or '#' in link
+                #         or '/.' in link
+                #         or not link.startswith('https://langchain-ai.github.io/langgraph/')
+                # ):
+                if url_filter.apply(link):
+                    print(f'Skipping the {link} link')
+                else:
+                    relevant_links.append(link)
 
-        for link in links:
-            if ('codelineno' in link
-                    or '#' in link
-                    or '/.' in link
-                    or not link.startswith('https://langchain-ai.github.io/langgraph/')
-            ):
-                print(f'Skipping the {link} link')
-            else:
-                relevant_links.append(link)
-                relevant_links_str += link + '\n'
+        else:
+           relevant_links = links
+
+        relevant_links_str = ''
+        for link in relevant_links:
+            relevant_links_str += link + '\n'
 
         if persist:
             output_directory = str(Path.cwd() / "docs" / "langgraph" / "links.txt")
@@ -113,3 +133,13 @@ class LanggraphDocScrapper(IWebSiteScrapper):
                 file.write(relevant_links_str)
 
         return relevant_links
+
+class LanggraphUrlFilter(IUrlFilter):
+    def apply(self, url: str) -> bool:
+        filter_condition: bool = (
+                'codelineno' in url
+                or '#' in url
+                or '/.' in url
+                or not url.startswith('https://langchain-ai.github.io/langgraph/')
+        )
+        return filter_condition

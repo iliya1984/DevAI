@@ -1,6 +1,12 @@
 import unittest
 from src.rag.vector_store import ChromaDbVectorStoreRetriever, docs
-from src.rag.scraping import LanggraphDocScrapper, WebPageScrapper, WebPageScrappingRequest
+from src.rag.scraping import (
+    WebsiteScrapper,
+    WebPageScrapper,
+    WebPageScrappingRequest,
+    WebSiteScrappingRequest,
+    LanggraphUrlFilter
+)
 from src.data_access.graphs import DocumentGraph
 from pathlib import Path
 import dotenv
@@ -24,32 +30,25 @@ class LLMTests(unittest.TestCase):
         sut.scrap(request=request)
 
     def test_link_retrieval(self):
-        # sut = WebPageScrapper()
-        # url = 'https://langchain-ai.github.io/langgraph/'
-        # links = sut.get_links(url=url)
-        #
-        # relevant_links = ''
-        # for link in links:
-        #     if ('codelineno' in link
-        #             or '#' in link
-        #             or '.' in link
-        #             or not link.startswith('https://langchain-ai.github.io/langgraph/')
-        #     ):
-        #         print(f'Skipping the {link} link')
-        #     else:
-        #         relevant_links += link + '\n'
-        #
-        # output_directory = str(Path.cwd() / "docs" / "langgraph" / "links.txt")
-        # with open(output_directory, "w") as file:
-        #     file.write(relevant_links)
+        site_url = 'https://langchain-ai.github.io/langgraph/'
+        site_name = 'langgraph'
 
-        sut = LanggraphDocScrapper(
+        request = WebSiteScrappingRequest(
+            site_name=site_name,
+            site_url=site_url,
+            persist_urls=True,
+            url_filter=LanggraphUrlFilter()
+        )
+
+        sut = WebsiteScrapper(
             scrapper=WebPageScrapper(),
             graph=DocumentGraph()
         )
 
-        result = sut.scrap()
-        #self.assertIsNotNone(links)
+        result = sut.graph.get_leaves_by_site_name(site_name='langgraph')
+
+        #result = sut.scrap(request=request)
+        self.assertIsNotNone(result)
 
 if __name__ == '__main__':
     unittest.main()
