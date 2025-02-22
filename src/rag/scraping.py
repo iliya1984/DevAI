@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import pdfkit
@@ -93,6 +94,7 @@ class WebsiteScrapper(IWebSiteScrapper):
             )
             self.graph.create_relationship(relationship=relationship)
 
+
     def scrap(self, request: WebSiteScrappingRequest):
         site_url = request.site_url
         site_name = request.site_name
@@ -104,17 +106,17 @@ class WebsiteScrapper(IWebSiteScrapper):
         self.create_nodes_and_relationships(document_tree=tree)
 
         leaves = self.graph.get_leaves_by_site_name(site_name=site_name)
+        for leaf in leaves:
+            leaf_path = self.graph.get_leaf_path(leaf_id=leaf.id)
+            full_leaf_path = str(Path(os.getcwd()).joinpath('temp').joinpath(f'{leaf_path}.pdf'))
+
+        i = 1
 
     def get_links(self, url: str, url_filter: IUrlFilter = None, persist:bool=False) -> List[str]:
         links = self.scrapper.get_links(url=url)
         relevant_links = []
         if url_filter:
             for link in links:
-                # if ('codelineno' in link
-                #         or '#' in link
-                #         or '/.' in link
-                #         or not link.startswith('https://langchain-ai.github.io/langgraph/')
-                # ):
                 if url_filter.apply(link):
                     print(f'Skipping the {link} link')
                 else:

@@ -5,6 +5,7 @@ from typing import Optional, List
 from treelib import Node, Tree
 from urllib.parse import urlparse
 import uuid
+from pathlib import Path
 
 class Neo4jConfiguration(BaseModel):
     url: str
@@ -112,6 +113,21 @@ class DocumentGraph:
     def __init__(self):
         self.graph = Graph()
 
+    def get_leaf_predecessors(self, leaf_id: str) -> List[DocumentNode]:
+        query = """
+                MATCH path = (n:DocumentLeaf {id:$leaf_id})<-[r:HAS_LINK_TO*]-(d) 
+                WITH nodes(path) as all_nodes 
+                UNWIND all_nodes as n 
+                WITH DISTINCT n 
+                WHERE NOT n:DocumentGroup
+                RETURN n.id AS id, n.name AS name, n.url AS url, 
+                   n.storage_path AS storage_path, n.site_name AS site_name
+                """
+
+        result = self.graph.select(query=query, args={'leaf_id': leaf_id})
+        nodes = [DocumentNode(**record) for record in result]
+        return nodes
+
     def get_leaves_by_site_name(self, site_name: str) -> List[DocumentNode]:
         query = """
             MATCH (n:Document:DocumentLeaf {site_name: $site_name}) 
@@ -123,6 +139,14 @@ class DocumentGraph:
         result = self.graph.select(query=query, args={'site_name' : site_name})
         leaves = [DocumentNode(**record) for record in result]
         return leaves
+
+    def get_leaf_path(self, leaf_id: str):
+        url_sub_path = Path()
+        leaf_predecessors = self.get_leaf_predecessors(leaf_id=leaf_id)
+        for node in reversed(leaf_predecessors):
+            url_sub_path = url_sub_path.joinpath(node.name)
+
+        return str(url_sub_path)
 
     def create_relationship(self, relationship: DocumentRelationship):
         def create_relationship_tx(tx, args: DocumentRelationship):
