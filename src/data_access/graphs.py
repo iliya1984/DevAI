@@ -7,22 +7,7 @@ from urllib.parse import urlparse
 import uuid
 from pathlib import Path
 
-class Neo4jConfiguration(BaseModel):
-    url: str
-    username: str
-    password: str
 
-    @staticmethod
-    def from_env():
-        url = os.environ['NEO4J_GRAPH_URL']
-        user = os.environ['NEO4J_GRAPH_USER']
-        password = os.environ['NEO4J_GRAPH_PASSWORD']
-
-        return Neo4jConfiguration(
-            url=url,
-            username=user,
-            password=password
-        )
 
 
 class Graph:

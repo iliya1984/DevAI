@@ -10,6 +10,7 @@ from src.rag.scraping import (
 from src.data_access.graphs import DocumentGraph
 from pathlib import Path
 import dotenv
+from src.infra.configuration import ConfigurationManager
 
 dotenv.load_dotenv()
 
