@@ -12,8 +12,12 @@ class Neo4jConfiguration(BaseModel):
     username: str
     password: str
 
+class ScrappingConfiguration(BaseModel):
+    storage_path: str
+
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
+    scrapping: Optional[ScrappingConfiguration] = None
 
 class ConfigurationManager:
 

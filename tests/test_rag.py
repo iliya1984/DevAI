@@ -10,7 +10,7 @@ from src.rag.scraping import (
 from src.data_access.graphs import DocumentGraph
 from pathlib import Path
 import dotenv
-from src.infra.configuration import ConfigurationManager
+from src.infra.di_module import Bootstrap
 
 dotenv.load_dotenv()
 
@@ -30,7 +30,8 @@ class LLMTests(unittest.TestCase):
         )
         sut.scrap(request=request)
 
-    def test_link_retrieval(self):
+    def test_website_scrapping(self):
+        bootstrap = Bootstrap()
         site_url = 'https://langchain-ai.github.io/langgraph/'
         site_name = 'langgraph'
 
@@ -41,14 +42,9 @@ class LLMTests(unittest.TestCase):
             url_filter=LanggraphUrlFilter()
         )
 
-        sut = WebsiteScrapper(
-            scrapper=WebPageScrapper(),
-            graph=DocumentGraph()
-        )
+        sut = bootstrap.container.web_site_scrapper()
 
-        result = sut.graph.get_leaves_by_site_name(site_name='langgraph')
-
-        #result = sut.scrap(request=request)
+        result = sut.scrap(request=request)
         self.assertIsNotNone(result)
 
 if __name__ == '__main__':

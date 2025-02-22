@@ -3,5 +3,8 @@
     "url": "bolt://localhost:7687",
     "username": "neo4j",
     "password": "$secret(NEO4J_GRAPH_PASSWORD)"
+  },
+  "scrapping" : {
+    "storage_path": "$secret(SCRAPPING_STORAGE_PATH)"
   }
 }

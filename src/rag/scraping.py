@@ -9,6 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 from src.data_access.graphs import DocumentGraph, DocumentTree, DocumentRelationship
+from src.infra.configuration import ScrappingConfiguration
 
 class IUrlFilter(ABC):
     @abstractmethod
@@ -72,9 +73,15 @@ class IWebSiteScrapper(ABC):
         pass
 
 class WebsiteScrapper(IWebSiteScrapper):
-    def __init__(self, scrapper: IWebPageScrapper, graph: DocumentGraph):
+    def __init__(
+            self,
+            scrapper: IWebPageScrapper,
+            graph: DocumentGraph,
+            configuration: ScrappingConfiguration
+    ):
         self.scrapper = scrapper
         self.graph = graph
+        self.configuration = configuration
 
     def create_nodes_and_relationships(self, document_tree: DocumentTree):
         tree = document_tree.tree
@@ -108,9 +115,13 @@ class WebsiteScrapper(IWebSiteScrapper):
         leaves = self.graph.get_leaves_by_site_name(site_name=site_name)
         for leaf in leaves:
             leaf_path = self.graph.get_leaf_path(leaf_id=leaf.id)
-            full_leaf_path = str(Path(os.getcwd()).joinpath('temp').joinpath(f'{leaf_path}.pdf'))
+            docs_path = Path(self.configuration.storage_path).joinpath('docs')
+            full_leaf_path = str(docs_path.joinpath(f'{leaf_path}.pdf'))
+            leaf.storage_path = full_leaf_path
+            self.graph.update_node(node=leaf)
 
-        i = 1
+        #TODO: Execute scrapping
+
 
     def get_links(self, url: str, url_filter: IUrlFilter = None, persist:bool=False) -> List[str]:
         links = self.scrapper.get_links(url=url)

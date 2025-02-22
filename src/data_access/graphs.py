@@ -6,14 +6,10 @@ from treelib import Node, Tree
 from urllib.parse import urlparse
 import uuid
 from pathlib import Path
-
-
-
+from src.infra.configuration import Neo4jConfiguration
 
 class Graph:
-    def __init__(self):
-        configuration = Neo4jConfiguration.from_env()
-
+    def __init__(self, configuration: Neo4jConfiguration):
         uri = configuration.url
         username = configuration.username
         password = configuration.password
@@ -95,8 +91,8 @@ class DocumentTree:
         return DocumentTree(tree=tree)
 
 class DocumentGraph:
-    def __init__(self):
-        self.graph = Graph()
+    def __init__(self, graph: Graph):
+        self.graph = graph
 
     def get_leaf_predecessors(self, leaf_id: str) -> List[DocumentNode]:
         query = """
@@ -149,6 +145,23 @@ class DocumentGraph:
 
         relationship_result = self.graph.write(transaction_fn=create_relationship_tx, args=relationship)
         return relationship_result
+
+    def update_node(self, node: DocumentNode):
+        def update_node_tx(tx, args: DocumentNode):
+            query = """
+                MATCH (d:Document {id: $id})
+                SET d.name = $name,
+                    d.site_name = $site_name,
+                    d.url = $url,
+                    d.storage_path = $storage_path
+                    RETURN d
+            """
+            params = args.model_dump()
+            result = tx.run(query, **params)
+            return result.single()
+
+        node_result = self.graph.write(transaction_fn=update_node_tx, args=node)
+        return node_result
 
     def create_node(self, node: DocumentNode):
         def create_node_tx(tx, args: DocumentNode):
