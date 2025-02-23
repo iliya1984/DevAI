@@ -51,7 +51,7 @@ class WebPageScrapper(IWebPageScrapper):
 
         os.makedirs(output_directory, exist_ok=True)
 
-        pdfkit.from_url(url, output_directory)
+        pdfkit.from_url(url, output_file_path)
 
     def get_links(self, url: str, persist:bool=False) -> List[str]:
         """Extracts all links from the webpage"""
