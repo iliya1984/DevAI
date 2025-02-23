@@ -46,7 +46,11 @@ class WebPageScrapper(IWebPageScrapper):
 
     def scrap(self, request: WebPageScrappingRequest):
         url = request.url
-        output_directory = request.output_directory
+        output_file_path = request.output_file_path
+        output_directory = str(Path(output_file_path).parent)
+
+        os.makedirs(output_directory, exist_ok=True)
+
         pdfkit.from_url(url, output_directory)
 
     def get_links(self, url: str, persist:bool=False) -> List[str]:
@@ -119,6 +123,13 @@ class WebsiteScrapper(IWebSiteScrapper):
             full_leaf_path = str(docs_path.joinpath(f'{leaf_path}.pdf'))
             leaf.storage_path = full_leaf_path
             self.graph.update_node(node=leaf)
+
+            page_scrapping_request = WebPageScrappingRequest(
+                url=leaf.url,
+                output_file_path=leaf.storage_path
+            )
+            self.scrapper.scrap(request=page_scrapping_request)
+
 
         #TODO: Execute scrapping
 
