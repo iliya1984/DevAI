@@ -2,6 +2,7 @@ ollama
 pandas
 requests
 openai
+langchain
 langchain-core
 sentence-transformers
 langchain-chroma>=0.1.2

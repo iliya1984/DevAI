@@ -18,10 +18,16 @@ class ScrappingConfiguration(BaseModel):
 class ParsingConfiguration(BaseModel):
     storage_path: str
 
+class EmbeddingConfiguration(BaseModel):
+    model_name: Optional[str] = None
+    chunk_size: int = 500
+    chunk_overlap: int = 50
+
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
     scrapping: Optional[ScrappingConfiguration] = None
     parsing: Optional[ParsingConfiguration] = None
+    embedding: Optional[EmbeddingConfiguration] = None
 
 class ConfigurationManager:
 

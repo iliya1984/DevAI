@@ -126,7 +126,8 @@ class DocumentGraph:
         query = """
             MATCH (n:Document {id: $id}) 
             RETURN n.id AS id, n.name AS name, n.url AS url, 
-                   n.storage_path AS storage_path, n.site_name AS site_name
+                   n.storage_path AS storage_path, n.parsing_storage_path as parsing_storage_path,
+                   n.site_name AS site_name
             """
 
         result = self.graph.select(query=query, args={'id' : document_id})

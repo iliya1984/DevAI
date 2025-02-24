@@ -10,9 +10,8 @@ from src.rag.scraping import (
 )
 from src.rag.parsing import (
     ParsingRequest,
-    IParser
 )
-from src.data_access.graphs import DocumentGraph
+from src.rag.embedding import EmbeddingRequest
 from pathlib import Path
 import dotenv
 from src.infra.di_module import Bootstrap
@@ -51,6 +50,28 @@ class RagTests(unittest.TestCase):
 
         result = sut.scrap(request=request)
         self.assertIsNotNone(result)
+
+    def test_multiple_document_embeding(self):
+        bootstrap = Bootstrap()
+        graph = bootstrap.container.document_graph()
+        embedder = bootstrap.container.document_embedder()
+
+        site_name='langgraph'
+
+        leaves = graph.get_leaves_by_site_name(site_name=site_name)
+        for leaf in leaves:
+            print(f'Embedding {leaf.storage_path} document')
+            request = EmbeddingRequest(document_id=leaf.id)
+            try:
+                embedder.embed(request=request)
+            except Exception as e:
+                print(e)
+
+    def test_vector_store_retrieval(self):
+        bootstrap = Bootstrap()
+        retriever = bootstrap.container.vector_store_retriever()
+        chunks  = retriever.query(query='What is the langgraph ?')
+        self.assertIsNotNone(chunks)
 
 if __name__ == '__main__':
     unittest.main()

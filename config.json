@@ -7,6 +7,9 @@
   "scrapping" : {
     "storage_path": "$secret(SCRAPPING_STORAGE_PATH)"
   },
+  "embedding" : {
+    "model_name": "sentence-transformers/all-mpnet-base-v2"
+  },
   "parsing": {
     "storage_path": "$secret(PARSING_STORAGE_PATH)"
   }

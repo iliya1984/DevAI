@@ -5,6 +5,8 @@ from src.infra.configuration import ConfigurationManager
 from src.data_access.graphs import Graph, DocumentGraph
 from src.rag.scraping import WebPageScrapper, WebsiteScrapper
 from src.rag.parsing import DocumentParser
+from src.rag.vector_store import ChromaDbVectorStoreRetriever
+from src.rag.embedding import DocumentEmbedder
 
 def create_logger(logger_name) -> logging.Logger:
     return logging.getLogger(name=logger_name)
@@ -43,6 +45,15 @@ class DIContainer(DeclarativeContainer):
         configuration=parsing_config
     )
 
+    vector_store_retriever = providers.Singleton(ChromaDbVectorStoreRetriever)
+    embedding_config = providers.Singleton(config.embedding)
+
+    document_embedder = providers.Singleton(
+        DocumentEmbedder,
+        graph=document_graph,
+        vector_store_retriever=vector_store_retriever,
+        configuration=embedding_config
+    )
 
 class Bootstrap:
     def __init__(self):
@@ -52,3 +63,4 @@ class Bootstrap:
         self.container.config.neo4j.from_value(self.configuration.neo4j_graph)
         self.container.config.scrapping.from_value(self.configuration.scrapping)
         self.container.config.parsing.from_value(self.configuration.parsing)
+        self.container.config.embedding.from_value(self.configuration.embedding)
