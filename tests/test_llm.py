@@ -1,8 +1,10 @@
+import os
 import unittest
 from ollama import chat, Client, ResponseError
 from tests.test_prompts import TestPrompts
-from configuration import *
+import dotenv
 
+dotenv.load_dotenv()
 
 class LLMTests(unittest.TestCase):
 
@@ -11,10 +13,10 @@ class LLMTests(unittest.TestCase):
         is_success = False
         try:
             client = Client(
-                host=OLLAMA_HOST
+                host=os.environ['OLLAMA_HOST']
             )
 
-            stream = client.chat(model=OLLAMA_VERSION, messages=[
+            stream = client.chat(model=os.environ['OLLAMA_VERSION'], messages=[
                 {
                     'role': 'user',
                     'content': TestPrompts.TELL_ME_A_JOKE_PROMPT

@@ -16,3 +16,4 @@ treelib
 dependency-injector
 pymupdf
 pymupdf4llm
+streamlit
