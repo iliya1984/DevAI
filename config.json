@@ -8,12 +8,27 @@
     "storage_path": "$secret(SCRAPPING_STORAGE_PATH)"
   },
   "embedding" : {
-    "model_name": "sentence-transformers/all-mpnet-base-v2"
+    "huggingface_embedding": {
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "persist_directory" : "$secret(HUGGINGFACE_MODELS_STORAGE_PATH)"
+    },
+    "chroma_db": {
+      "persist_directory" : "$secret(CHROMA_DB_STORAGE_PATH)",
+      "collection_name" : "travel_company_policies"
+    }
   },
   "chat": {
     "ollama" : {
       "host" : "http://localhost:11434",
       "version" : "qwen:14b"
+    },
+    "chroma_db": {
+      "persist_directory" : "$secret(CHROMA_DB_STORAGE_PATH)",
+      "collection_name" : "travel_company_policies"
+    },
+    "huggingface_embedding": {
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "persist_directory" : "$secret(HUGGINGFACE_MODELS_STORAGE_PATH)"
     }
   },
   "parsing": {

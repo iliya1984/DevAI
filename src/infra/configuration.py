@@ -18,10 +18,19 @@ class ScrappingConfiguration(BaseModel):
 class ParsingConfiguration(BaseModel):
     storage_path: str
 
+class HuggingFaceEmbeddingConfiguration(BaseModel):
+    model_name: str
+    persist_directory: str
+
+class ChromaDBConfiguration(BaseModel):
+    persist_directory: str
+    collection_name: str
+
 class EmbeddingConfiguration(BaseModel):
-    model_name: Optional[str] = None
+    huggingface_embedding: Optional[HuggingFaceEmbeddingConfiguration] = None
     chunk_size: int = 500
     chunk_overlap: int = 50
+    chroma_db: Optional[ChromaDBConfiguration] = None
 
 class OllamaConfiguration(BaseModel):
     host: str
@@ -29,6 +38,8 @@ class OllamaConfiguration(BaseModel):
 
 class ChatConfiguration(BaseModel):
     ollama: Optional[OllamaConfiguration] = None
+    huggingface_embedding: Optional[HuggingFaceEmbeddingConfiguration] = None
+    chroma_db: Optional[ChromaDBConfiguration] = None
 
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None

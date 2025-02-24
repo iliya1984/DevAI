@@ -37,9 +37,12 @@ class OllamaChatClient(IChatClient):
         prompt_content = prompt['content']
         chunk_documents = self.vector_store_retriever.query(query=prompt_content, k=10)
 
+        if len(chunk_documents) > 0:
+            prompt_content += '\nAdditional Context:'
+            for chunk in chunk_documents:
+                prompt_content += '\n' + chunk.page_content
 
-
-
+        prompt['content'] = prompt_content
         stream = self.client.chat(model=model, messages=message_history, stream=True)
 
         for chunk in stream:

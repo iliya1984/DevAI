@@ -46,20 +46,36 @@ class DIContainer(DeclarativeContainer):
         configuration=parsing_config
     )
 
-    vector_store_retriever = providers.Singleton(ChromaDbVectorStoreRetriever)
+    embedding_vector_db_config = providers.Singleton(config.embedding_vector_db)
+    embedding_model_config = providers.Singleton(config.embedding_model)
+
+    embedding_vector_store_retriever = providers.Singleton(
+        ChromaDbVectorStoreRetriever,
+        chroma_db_config=embedding_vector_db_config,
+        huggingface_embed_config=embedding_model_config
+    )
+
+    chat_vector_db_config = providers.Singleton(config.chat_vector_db)
+    chat_embedding_model_config = providers.Singleton(config.chat_embedding_model)
+    chat_vector_store_retriever = providers.Singleton(
+        ChromaDbVectorStoreRetriever,
+        chroma_db_config=chat_vector_db_config,
+        huggingface_embed_config=chat_embedding_model_config
+    )
+
     embedding_config = providers.Singleton(config.embedding)
 
     document_embedder = providers.Singleton(
         DocumentEmbedder,
         graph=document_graph,
-        vector_store_retriever=vector_store_retriever,
+        vector_store_retriever=embedding_vector_store_retriever,
         configuration=embedding_config
     )
 
     chat_config = providers.Singleton(config.chat)
     chat_client = providers.Singleton(
         OllamaChatClient,
-        vector_store_retriever=vector_store_retriever,
+        vector_store_retriever=chat_vector_store_retriever,
         configuration=chat_config
     )
 
@@ -74,3 +90,9 @@ class Bootstrap:
         self.container.config.parsing.from_value(self.configuration.parsing)
         self.container.config.embedding.from_value(self.configuration.embedding)
         self.container.config.chat.from_value(self.configuration.chat)
+        self.container.config.embedding_vector_db.from_value(self.configuration.embedding.chroma_db)
+        self.container.config.chat_vector_db.from_value(self.configuration.chat.chroma_db)
+        self.container.config.embedding_model.from_value(self.configuration.embedding.huggingface_embedding)
+        self.container.config.chat_embedding_model.from_value(self.configuration.chat.huggingface_embedding)
+
+
