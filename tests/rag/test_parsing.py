@@ -13,6 +13,21 @@ dotenv.load_dotenv()
 
 
 class ParsingTests(unittest.TestCase):
+    def test_multiple_document_parsing(self):
+        bootstrap = Bootstrap()
+        graph = bootstrap.container.document_graph()
+        parser = bootstrap.container.document_parser()
+
+        site_name='langgraph'
+
+        leaves = graph.get_leaves_by_site_name(site_name=site_name)
+        for leaf in leaves:
+            print(f'Parsing {leaf.storage_path} document')
+            request = ParsingRequest(document_id=leaf.id)
+            try:
+                documents = parser.parse(request=request)
+            except Exception as e:
+                print(e)
 
     def test_parsing(self):
         bootstrap = Bootstrap()
