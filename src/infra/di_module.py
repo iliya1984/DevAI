@@ -7,6 +7,7 @@ from src.rag.scraping import WebPageScrapper, WebsiteScrapper
 from src.rag.parsing import DocumentParser
 from src.rag.vector_store import ChromaDbVectorStoreRetriever
 from src.rag.embedding import DocumentEmbedder
+from src.inference.chatbots import OllamaChatClient
 
 def create_logger(logger_name) -> logging.Logger:
     return logging.getLogger(name=logger_name)
@@ -55,6 +56,10 @@ class DIContainer(DeclarativeContainer):
         configuration=embedding_config
     )
 
+    chat_config = providers.Singleton(config.chat)
+    chat_client = providers.Singleton(OllamaChatClient, configuration=chat_config)
+
+
 class Bootstrap:
     def __init__(self):
         self.configuration = ConfigurationManager().get()
@@ -64,3 +69,4 @@ class Bootstrap:
         self.container.config.scrapping.from_value(self.configuration.scrapping)
         self.container.config.parsing.from_value(self.configuration.parsing)
         self.container.config.embedding.from_value(self.configuration.embedding)
+        self.container.config.chat.from_value(self.configuration.chat)

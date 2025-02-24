@@ -23,11 +23,19 @@ class EmbeddingConfiguration(BaseModel):
     chunk_size: int = 500
     chunk_overlap: int = 50
 
+class OllamaConfiguration(BaseModel):
+    host: str
+    version: str
+
+class ChatConfiguration(BaseModel):
+    ollama: Optional[OllamaConfiguration] = None
+
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
     scrapping: Optional[ScrappingConfiguration] = None
     parsing: Optional[ParsingConfiguration] = None
     embedding: Optional[EmbeddingConfiguration] = None
+    chat: Optional[ChatConfiguration] = None
 
 class ConfigurationManager:
 

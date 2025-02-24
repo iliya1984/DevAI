@@ -1,17 +1,12 @@
-import os
-
+from src.infra.di_module import Bootstrap
+from src.inference.chatbots import CompletionRequest
 import streamlit as st
-from ollama import chat, Client, ResponseError
 import dotenv
 
 dotenv.load_dotenv()
 
-
-ollama_host = os.environ['OLLAMA_HOST']
-ollama_version = os.environ['OLLAMA_VERSION']
-client = Client(
-    host=ollama_host
-)
+bootstrap = Bootstrap()
+chat_client = bootstrap.container.chat_client()
 
 # Streamlit UI
 st.set_page_config(page_title="Chatbot", page_icon="🤖")
@@ -30,14 +25,6 @@ for message in st.session_state.messages:
 # User input
 user_input = st.chat_input("Type your message...")
 
-def response_generator(user_prompt: dict):
-    stream = client.chat(model=ollama_version, messages=[user_prompt], stream=True)
-
-    for chunk in stream:
-        # Extract text from the chunk
-        chunk_text = chunk['message']['content']
-        yield chunk_text
-
 if user_input:
     # Display user message
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -47,9 +34,10 @@ if user_input:
     # Generate response from OpenAI
     with st.spinner("Thinking..."):
         response_text = ""
-        prompt = st.session_state.messages[0]
+        #prompt = st.session_state.messages[0]
+        chat_messages = st.session_state.messages
         with st.chat_message("assistant"):
-            st.write_stream(response_generator(user_prompt=prompt))
+            st.write_stream(chat_client.completion_stream(request=CompletionRequest(messages=chat_messages)))
 
             # Append the full response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response_text})

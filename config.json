@@ -10,6 +10,12 @@
   "embedding" : {
     "model_name": "sentence-transformers/all-mpnet-base-v2"
   },
+  "chat": {
+    "ollama" : {
+      "host" : "http://localhost:11434",
+      "version" : "qwen:14b"
+    }
+  },
   "parsing": {
     "storage_path": "$secret(PARSING_STORAGE_PATH)"
   }
