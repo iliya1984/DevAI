@@ -6,5 +6,8 @@
   },
   "scrapping" : {
     "storage_path": "$secret(SCRAPPING_STORAGE_PATH)"
+  },
+  "parsing": {
+    "storage_path": "$secret(PARSING_STORAGE_PATH)"
   }
 }

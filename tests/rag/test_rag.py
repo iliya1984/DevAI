@@ -1,3 +1,4 @@
+import os
 import unittest
 from src.rag.vector_store import ChromaDbVectorStoreRetriever, docs
 from src.rag.scraping import (
@@ -7,6 +8,10 @@ from src.rag.scraping import (
     WebSiteScrappingRequest,
     LanggraphUrlFilter
 )
+from src.rag.parsing import (
+    ParsingRequest,
+    IParser
+)
 from src.data_access.graphs import DocumentGraph
 from pathlib import Path
 import dotenv
@@ -14,7 +19,7 @@ from src.infra.di_module import Bootstrap
 
 dotenv.load_dotenv()
 
-class LLMTests(unittest.TestCase):
+class RagTests(unittest.TestCase):
 
     def test_vector_search(self):
         ChromaDbVectorStoreRetriever.from_docs(docs)

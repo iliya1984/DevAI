@@ -4,6 +4,7 @@ import logging
 from src.infra.configuration import ConfigurationManager
 from src.data_access.graphs import Graph, DocumentGraph
 from src.rag.scraping import WebPageScrapper, WebsiteScrapper
+from src.rag.parsing import DocumentParser
 
 def create_logger(logger_name) -> logging.Logger:
     return logging.getLogger(name=logger_name)
@@ -35,6 +36,13 @@ class DIContainer(DeclarativeContainer):
         configuration=scrapping_config
     )
 
+    parsing_config = providers.Singleton(config.parsing)
+    document_parser = providers.Singleton(
+        DocumentParser,
+        graph=document_graph,
+        configuration=parsing_config
+    )
+
 
 class Bootstrap:
     def __init__(self):
@@ -43,3 +51,4 @@ class Bootstrap:
 
         self.container.config.neo4j.from_value(self.configuration.neo4j_graph)
         self.container.config.scrapping.from_value(self.configuration.scrapping)
+        self.container.config.parsing.from_value(self.configuration.parsing)

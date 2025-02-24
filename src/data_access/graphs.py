@@ -32,6 +32,7 @@ class DocumentNode(BaseModel):
     name: Optional[str] = None
     url: Optional[str] = None
     storage_path: Optional[str] = None
+    parsing_storage_path: Optional[str] = None
     site_name: Optional[str] = None
     is_root: bool = False
     is_leaf: bool = False
@@ -121,6 +122,20 @@ class DocumentGraph:
         leaves = [DocumentNode(**record) for record in result]
         return leaves
 
+    def get_document_node_by_id(self, document_id: str) -> DocumentNode | None:
+        query = """
+            MATCH (n:Document {id: $id}) 
+            RETURN n.id AS id, n.name AS name, n.url AS url, 
+                   n.storage_path AS storage_path, n.site_name AS site_name
+            """
+
+        result = self.graph.select(query=query, args={'id' : document_id})
+        nodes = [DocumentNode(**record) for record in result]
+        if len(nodes) > 0:
+            return nodes[0]
+
+        return None
+
     def get_leaf_path(self, leaf_id: str):
         url_sub_path = Path()
         leaf_predecessors = self.get_leaf_predecessors(leaf_id=leaf_id)
@@ -153,7 +168,8 @@ class DocumentGraph:
                 SET d.name = $name,
                     d.site_name = $site_name,
                     d.url = $url,
-                    d.storage_path = $storage_path
+                    d.storage_path = $storage_path,
+                    d.parsing_storage_path = $parsing_storage_path
                     RETURN d
             """
             params = args.model_dump()

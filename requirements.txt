@@ -6,9 +6,12 @@ langchain-core
 sentence-transformers
 langchain-chroma>=0.1.2
 langchain_huggingface
+langchain_community
 pdfkit
 bs4
 neo4j
 python-dotenv
 treelib
 dependency-injector
+pymupdf
+pymupdf4llm

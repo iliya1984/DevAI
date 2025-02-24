@@ -15,9 +15,13 @@ class Neo4jConfiguration(BaseModel):
 class ScrappingConfiguration(BaseModel):
     storage_path: str
 
+class ParsingConfiguration(BaseModel):
+    storage_path: str
+
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
     scrapping: Optional[ScrappingConfiguration] = None
+    parsing: Optional[ParsingConfiguration] = None
 
 class ConfigurationManager:
 
