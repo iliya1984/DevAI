@@ -57,7 +57,11 @@ class DIContainer(DeclarativeContainer):
     )
 
     chat_config = providers.Singleton(config.chat)
-    chat_client = providers.Singleton(OllamaChatClient, configuration=chat_config)
+    chat_client = providers.Singleton(
+        OllamaChatClient,
+        vector_store_retriever=vector_store_retriever,
+        configuration=chat_config
+    )
 
 
 class Bootstrap:

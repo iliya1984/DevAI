@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from src.infra.configuration import ChatConfiguration
 from ollama import Client
 from pydantic import BaseModel
+from src.rag.vector_store import IVectorStoreRetriever
 
 class CompletionRequest(BaseModel):
     messages: list = [dict[str, str]]
@@ -13,15 +14,33 @@ class IChatClient(ABC):
         pass
 
 class OllamaChatClient(IChatClient):
-    def __init__(self, configuration: ChatConfiguration):
+    def __init__(
+            self,
+            vector_store_retriever: IVectorStoreRetriever,
+            configuration: ChatConfiguration
+    ):
         self.configuration = configuration
+        self.vector_store_retriever =vector_store_retriever
 
         host = configuration.ollama.host
         self.client = Client(host=host)
 
     def completion_stream(self, request: CompletionRequest):
         model = self.configuration.ollama.version
-        stream = self.client.chat(model=model, messages=request.messages, stream=True)
+        messages = request.messages
+        system_prompt = ('You are a documentation assistant. Answer any question precisely. '
+                         'If you do not know the answer. Say: I do not know the answer')
+
+        message_history = [{ 'role': 'system', 'content': system_prompt }] + messages.copy()
+        prompt = message_history[len(message_history) - 1]
+
+        prompt_content = prompt['content']
+        chunk_documents = self.vector_store_retriever.query(query=prompt_content, k=10)
+
+
+
+
+        stream = self.client.chat(model=model, messages=message_history, stream=True)
 
         for chunk in stream:
             # Extract text from the chunk
