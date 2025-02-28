@@ -70,4 +70,5 @@ class ChromaDbVectorStoreRetriever(IVectorStoreRetriever):
 
 
     def query(self, query: str, k: int = 5) -> list[Document]:
-        return self.vector_store.similarity_search(query=query, k=k)
+        result = self.vector_store.similarity_search_with_score(query=query, k=k)
+        return [r[0] for r in result]

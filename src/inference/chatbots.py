@@ -9,6 +9,17 @@ class CompletionRequest(BaseModel):
     messages: list = [dict[str, str]]
 
 
+class CompletionStream:
+    def __init__(self, stream):
+        self.stream = stream
+        self.vector_search_result = []
+
+    def yield_chunks(self):
+        for chunk in self.stream:
+            # Extract text from the chunk
+            chunk_text = chunk['message']['content']
+            yield chunk_text
+
 class IChatClient(ABC):
     @abstractmethod
     def completion_stream(self, request: CompletionRequest):
@@ -36,17 +47,17 @@ class OllamaChatClient(IChatClient):
         prompt = message_history[len(message_history) - 1]
 
         prompt_content = prompt['content']
-        chunk_documents = self.vector_store_retriever.query(query=prompt_content, k=3)
+        vector_search_result = self.vector_store_retriever.query(query=prompt_content, k=3)
 
-        if len(chunk_documents) > 0:
+        if len(vector_search_result) > 0:
             prompt_content += '\nAdditional Context:'
-            for chunk in chunk_documents:
+            for chunk in vector_search_result:
                 prompt_content += '\n' + chunk.page_content
 
         prompt['content'] = prompt_content
         stream = self.client.chat(model=model, messages=message_history, stream=True)
 
-        for chunk in stream:
-            # Extract text from the chunk
-            chunk_text = chunk['message']['content']
-            yield chunk_text
+        completion = CompletionStream(stream=stream)
+        completion.vector_search_result = vector_search_result
+
+        return completion

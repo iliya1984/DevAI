@@ -17,6 +17,8 @@ st.write("Ask me anything!")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+col1, col2 = st.columns([2, 1])
+
 # Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -28,16 +30,29 @@ user_input = st.chat_input("Type your message...")
 if user_input:
     # Display user message
     st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
+    with col1:
+        with st.chat_message("user"):
+            st.markdown(user_input)
 
     # Generate response from OpenAI
     with st.spinner("Thinking..."):
         assistant_response = ""
-        response_container = st.empty()
-        #prompt = st.session_state.messages[0]
+        response_container = col1.empty()
+
         chat_messages = st.session_state.messages
-        for chunk in chat_client.completion_stream(request=CompletionRequest(messages=chat_messages)):
+        completion = chat_client.completion_stream(request=CompletionRequest(messages=chat_messages))
+        vector_search_result = completion.vector_search_result
+
+        with col2:
+            st.subheader("🔍 Related Documents")
+            if vector_search_result:
+                for doc in vector_search_result:
+                    with st.expander(doc.page_content[:500] + "..."):  # Show preview
+                        st.markdown(doc.page_content)
+            else:
+                st.markdown("No relevant documents found.")
+
+        for chunk in completion.yield_chunks():
             assistant_response += chunk  # Collect chunks
             response_container.markdown(assistant_response)  # Update UI dynamically
 
