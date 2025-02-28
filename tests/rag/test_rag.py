@@ -1,6 +1,6 @@
 import os
 import unittest
-from src.rag.vector_store import ChromaDbVectorStoreRetriever, docs
+from src.rag.vector_store import ChromaDbVectorStoreRetriever
 from src.rag.scraping import (
     WebsiteScrapper,
     WebPageScrapper,
@@ -19,10 +19,6 @@ from src.infra.di_module import Bootstrap
 dotenv.load_dotenv()
 
 class RagTests(unittest.TestCase):
-
-    def test_vector_search(self):
-        ChromaDbVectorStoreRetriever.from_docs(docs)
-        i = 1
 
     def test_web_scrapping(self):
         sut = WebPageScrapper()

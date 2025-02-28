@@ -152,7 +152,8 @@ class WebsiteScrapper(IWebSiteScrapper):
             relevant_links_str += link + '\n'
 
         if persist:
-            output_directory = str(Path.cwd() / "docs" / "langgraph" / "links.txt")
+            output_directory = str(Path(self.configuration.storage_path) / "docs" / "langgraph" / "links.txt")
+            Path(output_directory).parent.mkdir(parents=True, exist_ok=True)
             with open(output_directory, "w") as file:
                 file.write(relevant_links_str)
 
