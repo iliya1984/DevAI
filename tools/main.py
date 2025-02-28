@@ -19,10 +19,11 @@ if "messages" not in st.session_state:
 
 col1, col2 = st.columns([2, 1])
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+with col1:
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 # User input
 user_input = st.chat_input("Type your message...")

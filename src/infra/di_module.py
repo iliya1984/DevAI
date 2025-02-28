@@ -66,7 +66,8 @@ class DIContainer(DeclarativeContainer):
     embedding_vector_store_retriever = providers.Singleton(
         ChromaDbVectorStoreRetriever,
         chroma_db_config=embedding_vector_db_config,
-        huggingface_embed_config=embedding_model_config
+        huggingface_embed_config=embedding_model_config,
+        logger=logger
     )
 
     chat_vector_db_config = providers.Singleton(config.chat_vector_db)
