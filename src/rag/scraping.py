@@ -1,7 +1,6 @@
 import os
 import uuid
 
-import pdfkit
 from pydantic import BaseModel, field_validator
 from typing import Optional, List, Any
 from abc import ABC, abstractmethod
@@ -51,6 +50,7 @@ class WebPageScrapper(IWebPageScrapper):
 
         os.makedirs(output_directory, exist_ok=True)
 
+        import pdfkit
         pdfkit.from_url(url, output_file_path)
 
     def get_links(self, url: str, persist:bool=False) -> List[str]:
