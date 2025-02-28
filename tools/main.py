@@ -33,12 +33,14 @@ if user_input:
 
     # Generate response from OpenAI
     with st.spinner("Thinking..."):
-        response_text = ""
+        assistant_response = ""
+        response_container = st.empty()
         #prompt = st.session_state.messages[0]
         chat_messages = st.session_state.messages
-        with st.chat_message("assistant"):
-            st.write_stream(chat_client.completion_stream(request=CompletionRequest(messages=chat_messages)))
+        for chunk in chat_client.completion_stream(request=CompletionRequest(messages=chat_messages)):
+            assistant_response += chunk  # Collect chunks
+            response_container.markdown(assistant_response)  # Update UI dynamically
 
             # Append the full response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
+        st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 

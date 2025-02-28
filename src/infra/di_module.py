@@ -9,10 +9,24 @@ from src.rag.vector_store import ChromaDbVectorStoreRetriever
 from src.rag.embedding import DocumentEmbedder
 from src.inference.chatbots import OllamaChatClient
 
-def create_logger(logger_name) -> logging.Logger:
-    return logging.getLogger(name=logger_name)
+def configure_logger():
+    logger = logging.getLogger("AppLogger")
+    logger.setLevel(logging.DEBUG)  # Set the logging level
 
-logger = create_logger('DevAI')
+    # Create console handler
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+
+    # Create a formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+
+    # Add handler to logger
+    logger.addHandler(handler)
+
+    return logger
+
+logger = configure_logger()
 
 class DIContainer(DeclarativeContainer):
     config = providers.Configuration()
@@ -60,7 +74,8 @@ class DIContainer(DeclarativeContainer):
     chat_vector_store_retriever = providers.Singleton(
         ChromaDbVectorStoreRetriever,
         chroma_db_config=chat_vector_db_config,
-        huggingface_embed_config=chat_embedding_model_config
+        huggingface_embed_config=chat_embedding_model_config,
+        logger=logger
     )
 
     embedding_config = providers.Singleton(config.embedding)

@@ -3,6 +3,7 @@ from src.infra.configuration import ChatConfiguration
 from ollama import Client
 from pydantic import BaseModel
 from src.rag.vector_store import IVectorStoreRetriever
+import copy
 
 class CompletionRequest(BaseModel):
     messages: list = [dict[str, str]]
@@ -31,11 +32,11 @@ class OllamaChatClient(IChatClient):
         system_prompt = ('You are a documentation assistant. Answer any question precisely. '
                          'If you do not know the answer. Say: I do not know the answer')
 
-        message_history = [{ 'role': 'system', 'content': system_prompt }] + messages.copy()
+        message_history = [{ 'role': 'system', 'content': system_prompt }] + copy.deepcopy(messages)
         prompt = message_history[len(message_history) - 1]
 
         prompt_content = prompt['content']
-        chunk_documents = self.vector_store_retriever.query(query=prompt_content, k=10)
+        chunk_documents = self.vector_store_retriever.query(query=prompt_content, k=3)
 
         if len(chunk_documents) > 0:
             prompt_content += '\nAdditional Context:'
