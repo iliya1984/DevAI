@@ -2,8 +2,8 @@
 models
 */docs
 */parsed_docs
-docs
-parsed_docs
+temp/docs
+temp/parsed_docs
 
 .env
 temp

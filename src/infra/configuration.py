@@ -28,8 +28,8 @@ class ChromaDBConfiguration(BaseModel):
 
 class EmbeddingConfiguration(BaseModel):
     huggingface_embedding: Optional[HuggingFaceEmbeddingConfiguration] = None
-    chunk_size: int = 500
-    chunk_overlap: int = 50
+    chunk_size: int = 1000
+    chunk_overlap: int = 100
     chroma_db: Optional[ChromaDBConfiguration] = None
 
 class OllamaConfiguration(BaseModel):

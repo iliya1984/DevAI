@@ -84,7 +84,8 @@ class DIContainer(DeclarativeContainer):
         DocumentEmbedder,
         graph=document_graph,
         vector_store_retriever=embedding_vector_store_retriever,
-        configuration=embedding_config
+        configuration=embedding_config,
+        logger=logger
     )
 
     chat_config = providers.Singleton(config.chat)

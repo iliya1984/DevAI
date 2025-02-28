@@ -5,6 +5,7 @@ from src.data_access.graphs import DocumentGraph
 from src.rag.vector_store import IVectorStoreRetriever
 from pathlib import Path
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from logging import Logger
 
 class EmbeddingRequest(BaseModel):
     document_id: str
@@ -19,11 +20,13 @@ class DocumentEmbedder(IEmbedder):
             self,
             graph: DocumentGraph,
             vector_store_retriever: IVectorStoreRetriever,
-            configuration: EmbeddingConfiguration
+            configuration: EmbeddingConfiguration,
+            logger: Logger
     ):
         self.graph = graph
         self.configuration = configuration
         self.vector_store_retriever = vector_store_retriever
+        self.logger = logger
 
     def embed(self, request: EmbeddingRequest):
         document_id = request.document_id
@@ -49,8 +52,10 @@ class DocumentEmbedder(IEmbedder):
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.configuration.chunk_size,
             chunk_overlap=self.configuration.chunk_overlap,
-            separators=["\n## ", "\n### ", "\n", " "]  # Prioritize splitting at markdown headings
+            separators=["\n## ", "\n### ", "\n", " "]
         )
 
         chunks = splitter.split_text(md_content)
+
+        self.logger.info(f'Embedding chunks for {parsed_file_path} file')
         self.vector_store_retriever.embed(chunks=chunks)
