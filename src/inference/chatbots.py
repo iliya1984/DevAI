@@ -40,17 +40,18 @@ class OllamaChatClient(IChatClient):
     def completion_stream(self, request: CompletionRequest):
         model = self.configuration.ollama.version
         messages = request.messages
-        system_prompt = ('You are a documentation assistant. Answer any question precisely. '
-                         'If you do not know the answer. Say: I do not know the answer')
+        system_prompt = ("You are a coding assistant specialized in the LangGraph library. "
+                         "Utilize the provided CONTEXT to answer the QUESTION. If the CONTEXT lacks sufficient information, "
+                         "respond with I don't know based on the provided context.")
 
         message_history = [{ 'role': 'system', 'content': system_prompt }] + copy.deepcopy(messages)
         prompt = message_history[len(message_history) - 1]
 
-        prompt_content = prompt['content']
+        prompt_content = 'QUESTION: ' + prompt['content']
         vector_search_result = self.vector_store_retriever.query(query=prompt_content, k=3)
 
         if len(vector_search_result) > 0:
-            prompt_content += '\nAdditional Context:'
+            prompt_content += '\nCONTEXT: '
             for chunk in vector_search_result:
                 prompt_content += '\n' + chunk.page_content
 
