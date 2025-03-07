@@ -1,0 +1,5 @@
+cd C:\Program Files\elastic-stack\elasticsearch-8.17.3-windows-x86_64\elasticsearch-8.17.3
+bin\elasticsearch.bat
+
+cd C:\Program Files\elastic-stack\kibana-8.17.3-windows-x86_64\kibana-8.17.3
+bin\kibana.bat
