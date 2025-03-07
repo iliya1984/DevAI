@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
+from src.data_access.reporting import ReportClient, IReportClient
 from src.infra.configuration import ChatConfiguration
 from ollama import Client
 from pydantic import BaseModel
 from src.rag.vector_store import IVectorStoreRetriever
 import copy
+import uuid
+from datetime import datetime
 
 class CompletionRequest(BaseModel):
+    request_id: str = str(uuid.uuid4())
     messages: list = [dict[str, str]]
 
 
@@ -29,6 +33,7 @@ class OllamaChatClient(IChatClient):
     def __init__(
             self,
             vector_store_retriever: IVectorStoreRetriever,
+            report_client: IReportClient,
             configuration: ChatConfiguration
     ):
         self.configuration = configuration
@@ -36,6 +41,7 @@ class OllamaChatClient(IChatClient):
 
         host = configuration.ollama.host
         self.client = Client(host=host)
+        self.report_client = report_client
 
     def completion_stream(self, request: CompletionRequest):
         model = self.configuration.ollama.version
@@ -47,13 +53,24 @@ class OllamaChatClient(IChatClient):
         message_history = [{ 'role': 'system', 'content': system_prompt }] + copy.deepcopy(messages)
         prompt = message_history[len(message_history) - 1]
 
-        prompt_content = 'QUESTION: ' + prompt['content']
+        initial_user_prompt = prompt['content']
+        prompt_content = 'QUESTION: ' + initial_user_prompt
         vector_search_result = self.vector_store_retriever.query(query=prompt_content, k=3)
+
+
 
         if len(vector_search_result) > 0:
             prompt_content += '\nCONTEXT: '
             for chunk in vector_search_result:
                 prompt_content += '\n' + chunk.page_content
+
+                record = {
+                    "@timestamp": datetime.now().isoformat(),
+                    "requestId": request.request_id,
+                    "userPrompt" : initial_user_prompt,
+                    "chunk" : chunk.page_content
+                }
+                self.report_client.report(record=record)
 
         prompt['content'] = prompt_content
         stream = self.client.chat(model=model, messages=message_history, stream=True)

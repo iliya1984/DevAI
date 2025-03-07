@@ -1,7 +1,12 @@
 import unittest
+import uuid
+
 from src.data_access.graphs import DocumentGraph
 import dotenv
 from src.infra.configuration import ConfigurationManager
+from elasticsearch import Elasticsearch
+from datetime import datetime
+
 
 dotenv.load_dotenv()
 
@@ -16,6 +21,7 @@ class GraphTests(unittest.TestCase):
         configuration_manager = ConfigurationManager()
         config = configuration_manager.get()
         self.assertIsNotNone(config)
+
 
 if __name__ == '__main__':
     unittest.main()

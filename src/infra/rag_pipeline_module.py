@@ -8,25 +8,8 @@ from src.rag.parsing import DocumentParser
 from src.rag.vector_store import ChromaDbVectorStoreRetriever
 from src.rag.embedding import DocumentEmbedder
 from src.inference.chatbots import OllamaChatClient
+from src.infra.logging_infra import logger
 
-def configure_logger():
-    logger = logging.getLogger("AppLogger")
-    logger.setLevel(logging.DEBUG)  # Set the logging level
-
-    # Create console handler
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-
-    # Create a formatter and add it to the handler
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-
-    # Add handler to logger
-    logger.addHandler(handler)
-
-    return logger
-
-logger = configure_logger()
 
 class DIContainer(DeclarativeContainer):
     config = providers.Configuration()
@@ -69,16 +52,6 @@ class DIContainer(DeclarativeContainer):
         huggingface_embed_config=embedding_model_config,
         logger=logger
     )
-
-    chat_vector_db_config = providers.Singleton(config.chat_vector_db)
-    chat_embedding_model_config = providers.Singleton(config.chat_embedding_model)
-    chat_vector_store_retriever = providers.Singleton(
-        ChromaDbVectorStoreRetriever,
-        chroma_db_config=chat_vector_db_config,
-        huggingface_embed_config=chat_embedding_model_config,
-        logger=logger
-    )
-
     embedding_config = providers.Singleton(config.embedding)
 
     document_embedder = providers.Singleton(
@@ -89,15 +62,9 @@ class DIContainer(DeclarativeContainer):
         logger=logger
     )
 
-    chat_config = providers.Singleton(config.chat)
-    chat_client = providers.Singleton(
-        OllamaChatClient,
-        vector_store_retriever=chat_vector_store_retriever,
-        configuration=chat_config
-    )
 
 
-class Bootstrap:
+class RagPipelineBootstrap:
     def __init__(self):
         self.configuration = ConfigurationManager().get()
         self.container = DIContainer()
@@ -108,8 +75,6 @@ class Bootstrap:
         self.container.config.embedding.from_value(self.configuration.embedding)
         self.container.config.chat.from_value(self.configuration.chat)
         self.container.config.embedding_vector_db.from_value(self.configuration.embedding.chroma_db)
-        self.container.config.chat_vector_db.from_value(self.configuration.chat.chroma_db)
         self.container.config.embedding_model.from_value(self.configuration.embedding.huggingface_embedding)
-        self.container.config.chat_embedding_model.from_value(self.configuration.chat.huggingface_embedding)
 
 

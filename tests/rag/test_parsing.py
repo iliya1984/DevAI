@@ -7,14 +7,14 @@ from src.rag.parsing import (
  )
 import dotenv
 import unittest
-from src.infra.di_module import Bootstrap
+from src.infra.rag_pipeline_module import RagPipelineBootstrap
 
 dotenv.load_dotenv()
 
 
 class ParsingTests(unittest.TestCase):
     def test_multiple_document_parsing(self):
-        bootstrap = Bootstrap()
+        bootstrap = RagPipelineBootstrap()
         graph = bootstrap.container.document_graph()
         parser = bootstrap.container.document_parser()
 
@@ -30,7 +30,7 @@ class ParsingTests(unittest.TestCase):
                 print(e)
 
     def test_parsing(self):
-        bootstrap = Bootstrap()
+        bootstrap = RagPipelineBootstrap()
         sut = bootstrap.container.document_parser()
         request = ParsingRequest(document_id='2109e24c-56ee-4519-b2f9-2c1d7473fe67')
 

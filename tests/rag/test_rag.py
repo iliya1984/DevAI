@@ -14,7 +14,7 @@ from src.rag.parsing import (
 from src.rag.embedding import EmbeddingRequest
 from pathlib import Path
 import dotenv
-from src.infra.di_module import Bootstrap
+from src.infra.rag_pipeline_module import RagPipelineBootstrap
 
 dotenv.load_dotenv()
 
@@ -31,7 +31,7 @@ class RagTests(unittest.TestCase):
         sut.scrap(request=request)
 
     def test_website_scrapping(self):
-        bootstrap = Bootstrap()
+        bootstrap = RagPipelineBootstrap()
         site_url = 'https://langchain-ai.github.io/langgraph/'
         site_name = 'langgraph'
 
@@ -48,7 +48,7 @@ class RagTests(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_multiple_document_embeding(self):
-        bootstrap = Bootstrap()
+        bootstrap = RagPipelineBootstrap()
         graph = bootstrap.container.document_graph()
         embedder = bootstrap.container.document_embedder()
 
@@ -64,7 +64,7 @@ class RagTests(unittest.TestCase):
                 print(e)
 
     def test_vector_store_retrieval(self):
-        bootstrap = Bootstrap()
+        bootstrap = RagPipelineBootstrap()
         retriever = bootstrap.container.vector_store_retriever()
         chunks  = retriever.query(query='What is the langgraph ?')
         self.assertIsNotNone(chunks)

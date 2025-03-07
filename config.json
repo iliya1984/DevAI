@@ -4,6 +4,11 @@
     "username": "neo4j",
     "password": "$secret(NEO4J_GRAPH_PASSWORD)"
   },
+  "elasticsearch" : {
+    "endpoint": "https://127.0.0.1:9200",
+    "username" : "elastic",
+    "password" : "$secret(ELASTIC_SEARCH_PASSWORD)"
+  },
   "scrapping" : {
     "storage_path": "$secret(SCRAPPING_STORAGE_PATH)"
   },

@@ -12,6 +12,11 @@ class Neo4jConfiguration(BaseModel):
     username: str
     password: str
 
+class ElasticsearchConfiguration(BaseModel):
+    endpoint: str
+    username: str
+    password: str
+
 class ScrappingConfiguration(BaseModel):
     storage_path: str
 
@@ -43,6 +48,7 @@ class ChatConfiguration(BaseModel):
 
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
+    elasticsearch: Optional[ElasticsearchConfiguration] = None
     scrapping: Optional[ScrappingConfiguration] = None
     parsing: Optional[ParsingConfiguration] = None
     embedding: Optional[EmbeddingConfiguration] = None
