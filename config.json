@@ -25,7 +25,7 @@
   "chat": {
     "ollama" : {
       "host" : "http://localhost:11434",
-      "version" : "qwen:14b"
+      "version" : "codellama:7b"
     },
     "chroma_db": {
       "persist_directory" : "$secret(CHROMA_DB_STORAGE_PATH)",
@@ -34,6 +34,9 @@
     "huggingface_embedding": {
       "model_name": "sentence-transformers/all-mpnet-base-v2",
       "persist_directory" : "$secret(HUGGINGFACE_MODELS_STORAGE_PATH)"
+    },
+    "completion" : {
+      "chunk_number" : 3
     }
   },
   "parsing": {

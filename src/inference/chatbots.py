@@ -55,7 +55,9 @@ class OllamaChatClient(IChatClient):
 
         initial_user_prompt = prompt['content']
         prompt_content = 'QUESTION: ' + initial_user_prompt
-        vector_search_result = self.vector_store_retriever.query(query=prompt_content, k=3)
+
+        chunks_to_retrieve = self.configuration.completion.chunk_number
+        vector_search_result = self.vector_store_retriever.query(query=prompt_content, k=chunks_to_retrieve)
 
 
 

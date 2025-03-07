@@ -41,10 +41,15 @@ class OllamaConfiguration(BaseModel):
     host: str
     version: str
 
+class CompletionConfiguration(BaseModel):
+    chunk_number: int = 5
+
 class ChatConfiguration(BaseModel):
     ollama: Optional[OllamaConfiguration] = None
     huggingface_embedding: Optional[HuggingFaceEmbeddingConfiguration] = None
     chroma_db: Optional[ChromaDBConfiguration] = None
+    completion: Optional[CompletionConfiguration] = None
+
 
 class Configuration(BaseModel):
     neo4j_graph: Optional[Neo4jConfiguration] = None
